@@ -1,0 +1,228 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>WorkQuest Jr.</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: #e0f7fa;
+    font-family: sans-serif;
+  }
+  canvas {
+    display: block;
+    background: #a7ffeb;
+  }
+  #wordPrompt {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 32px;
+    font-weight: bold;
+    background: #fff3e0;
+    padding: 10px 20px;
+    border-radius: 8px;
+    display: none;
+  }
+</style>
+</head>
+<body>
+<canvas id="gameCanvas" width="800" height="600"></canvas>
+<div id="wordPrompt"></div>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+let keys = {};
+let player = {
+  x: 50, y: 500, width: 40, height: 40,
+  dx: 0, dy: 0, speed: 3, jumping: false
+};
+
+let gravity = 0.5;
+let friction = 0.8;
+
+let platforms = [
+  {x: 0, y: 580, width: 800, height: 20},
+  {x: 150, y: 450, width: 100, height: 20},
+  {x: 300, y: 350, width: 100, height: 20},
+  {x: 450, y: 250, width: 100, height: 20},
+];
+
+let gems = [
+  {x: 160, y: 410, collected: false},
+  {x: 310, y: 310, collected: false},
+  {x: 460, y: 210, collected: false}
+];
+
+let bugs = [
+  {x: 600, y: 540, width: 40, height: 40, dx: 2}
+];
+
+let folderOpened = false;
+let showWord = false;
+let targetWord = "cat";
+let typedLetters = "";
+let promptDiv = document.getElementById("wordPrompt");
+
+document.addEventListener("keydown", (e) => {
+  keys[e.key] = true;
+
+  if (showWord && e.key.length === 1) {
+    if (e.key === targetWord[typedLetters.length]) {
+      typedLetters += e.key;
+      updateWordPrompt();
+      if (typedLetters === targetWord) {
+        promptDiv.innerText = "Great job!";
+      }
+    } else {
+      // optional error sound or flash
+    }
+  }
+});
+
+document.addEventListener("keyup", (e) => {
+  keys[e.key] = false;
+});
+
+function updateWordPrompt() {
+  promptDiv.innerText = targetWord.split('').map((l, i) => typedLetters[i] || "_").join(" ");
+}
+
+function drawPlayer() {
+  ctx.fillStyle = "#00796b";
+  ctx.fillRect(player.x, player.y, player.width, player.height);
+}
+
+function drawPlatforms() {
+  ctx.fillStyle = "#4db6ac";
+  platforms.forEach(p => {
+    ctx.fillRect(p.x, p.y, p.width, p.height);
+  });
+}
+
+function drawGems() {
+  gems.forEach(gem => {
+    if (!gem.collected) {
+      ctx.beginPath();
+      ctx.arc(gem.x, gem.y, 10, 0, Math.PI * 2);
+      ctx.fillStyle = "#ffab00";
+      ctx.fill();
+    }
+  });
+}
+
+function drawBugs() {
+  ctx.fillStyle = "#d32f2f";
+  bugs.forEach(bug => {
+    ctx.fillRect(bug.x, bug.y, bug.width, bug.height);
+  });
+}
+
+function drawFolder() {
+  if (folderOpened) {
+    ctx.fillStyle = "#fff176";
+    ctx.fillRect(700, 500, 60, 60);
+  }
+}
+
+function checkCollision(a, b) {
+  return (a.x < b.x + b.width &&
+          a.x + a.width > b.x &&
+          a.y < b.y + b.height &&
+          a.y + a.height > b.y);
+}
+
+function update() {
+  // Movement
+  if (keys["ArrowLeft"]) player.dx = -player.speed;
+  else if (keys["ArrowRight"]) player.dx = player.speed;
+  else player.dx *= friction;
+
+  if (keys["ArrowUp"] && !player.jumping) {
+    player.dy = -10;
+    player.jumping = true;
+  }
+
+  player.dy += gravity;
+  player.x += player.dx;
+  player.y += player.dy;
+
+  // Collision with platforms
+  platforms.forEach(p => {
+    if (player.x < p.x + p.width &&
+        player.x + player.width > p.x &&
+        player.y + player.height > p.y &&
+        player.y + player.height < p.y + p.height) {
+      player.y = p.y - player.height;
+      player.dy = 0;
+      player.jumping = false;
+    }
+  });
+
+  // Gem collection
+  gems.forEach(gem => {
+    let dist = Math.hypot(player.x - gem.x, player.y - gem.y);
+    if (dist < 30 && !gem.collected) {
+      gem.collected = true;
+    }
+  });
+
+  // Bug collision
+  bugs.forEach(bug => {
+    bug.x += bug.dx;
+    if (bug.x < 0 || bug.x + bug.width > canvas.width) bug.dx *= -1;
+
+    if (checkCollision(player, bug)) {
+      resetGame();
+    }
+  });
+
+  // Folder open condition
+  if (gems.every(g => g.collected)) {
+    folderOpened = true;
+  }
+
+  // Trigger typing challenge
+  if (folderOpened && !showWord) {
+    let inFolder = player.x > 700 && player.y > 480;
+    if (inFolder) {
+      showWord = true;
+      promptDiv.style.display = "block";
+      updateWordPrompt();
+    }
+  }
+}
+
+function resetGame() {
+  player.x = 50;
+  player.y = 500;
+  player.dx = 0;
+  player.dy = 0;
+  gems.forEach(g => g.collected = false);
+  folderOpened = false;
+  showWord = false;
+  typedLetters = "";
+  promptDiv.style.display = "none";
+}
+
+function gameLoop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  update();
+  drawPlatforms();
+  drawGems();
+  drawBugs();
+  drawFolder();
+  drawPlayer();
+  requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
+</body>
+</html>
