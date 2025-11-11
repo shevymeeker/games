@@ -90,14 +90,25 @@
     text-shadow: 2px 2px 0px rgba(255,255,255,0.5);
   }
 
-  #wordDisplay {
+  #targetWord {
     font-size: 56px;
+    font-weight: bold;
+    color: #8B4513;
+    letter-spacing: 12px;
+    margin: 10px 0;
+    font-family: 'Courier New', monospace;
+    text-shadow: 2px 2px 0px rgba(255,255,255,0.5);
+  }
+
+  #wordDisplay {
+    font-size: 48px;
     font-weight: bold;
     color: #fff;
     letter-spacing: 12px;
-    margin: 20px 0;
+    margin: 15px 0 5px 0;
     font-family: 'Courier New', monospace;
     text-shadow: 4px 4px 0px rgba(0,0,0,0.3);
+    min-height: 60px;
   }
 
   .correct {
@@ -221,6 +232,7 @@
     <div id="encouragement"></div>
     <div id="wordPrompt">
       <h2>Type this word! 📝</h2>
+      <div id="targetWord"></div>
       <div id="wordDisplay"></div>
     </div>
     <div id="message">
@@ -941,14 +953,19 @@ class TypingState extends GameState {
   }
 
   updateDisplay() {
-    const display = this.targetWord.split('').map((letter, i) => {
+    // Show the target word (what they need to type)
+    const targetDisplay = this.targetWord.split('').join(' ');
+    document.getElementById('targetWord').innerHTML = targetDisplay;
+
+    // Show their typing progress
+    const progressDisplay = this.targetWord.split('').map((letter, i) => {
       if (i < this.typedLetters.length) {
         return `<span class="correct">${letter}</span>`;
       }
       return '_';
     }).join(' ');
 
-    document.getElementById('wordDisplay').innerHTML = display;
+    document.getElementById('wordDisplay').innerHTML = progressDisplay;
   }
 
   draw(ctx) {
