@@ -726,103 +726,362 @@ class Level {
 }
 
 const LEVELS = [
+  // EASY LEVELS (1-5): 3-4 letter words, simple jumps, no enemies
   {
     platforms: [
       {x: 0, y: 660, width: 1000, height: 40, hasGrass: true},
-      {x: 200, y: 540, width: 150, height: 25, hasGrass: false},
-      {x: 450, y: 440, width: 150, height: 25, hasGrass: false}
+      {x: 250, y: 560, width: 150, height: 25, hasGrass: false}
     ],
-    gems: [
-      {x: 250, y: 480},
-      {x: 500, y: 380}
-    ],
+    gems: [{x: 300, y: 500}],
     bugs: [],
+    chest: {x: 900, y: 600},
+    word: 'cat'
+  },
+  {
+    platforms: [
+      {x: 0, y: 660, width: 1000, height: 40, hasGrass: true},
+      {x: 200, y: 560, width: 140, height: 25, hasGrass: false},
+      {x: 450, y: 560, width: 140, height: 25, hasGrass: false}
+    ],
+    gems: [{x: 250, y: 500}, {x: 500, y: 500}],
+    bugs: [],
+    chest: {x: 900, y: 600},
+    word: 'dog'
+  },
+  {
+    platforms: [
+      {x: 0, y: 660, width: 1000, height: 40, hasGrass: true},
+      {x: 150, y: 560, width: 130, height: 25, hasGrass: false},
+      {x: 400, y: 480, width: 130, height: 25, hasGrass: false}
+    ],
+    gems: [{x: 190, y: 500}, {x: 440, y: 420}],
+    bugs: [],
+    chest: {x: 900, y: 600},
+    word: 'run'
+  },
+  {
+    platforms: [
+      {x: 0, y: 660, width: 1000, height: 40, hasGrass: true},
+      {x: 180, y: 560, width: 120, height: 25, hasGrass: false},
+      {x: 380, y: 480, width: 120, height: 25, hasGrass: false},
+      {x: 580, y: 560, width: 120, height: 25, hasGrass: false}
+    ],
+    gems: [{x: 220, y: 500}, {x: 420, y: 420}, {x: 620, y: 500}],
+    bugs: [],
+    chest: {x: 900, y: 600},
+    word: 'sun'
+  },
+  {
+    platforms: [
+      {x: 0, y: 660, width: 1000, height: 40, hasGrass: true},
+      {x: 150, y: 560, width: 120, height: 25, hasGrass: false},
+      {x: 330, y: 490, width: 120, height: 25, hasGrass: false},
+      {x: 510, y: 560, width: 120, height: 25, hasGrass: false}
+    ],
+    gems: [{x: 190, y: 500}, {x: 370, y: 430}, {x: 550, y: 500}],
+    bugs: [],
+    chest: {x: 900, y: 600},
+    word: 'hat'
+  },
+
+  // MEDIUM LEVELS (6-10): 4 letter words, add 1 enemy
+  {
+    platforms: [
+      {x: 0, y: 660, width: 1000, height: 40, hasGrass: true},
+      {x: 140, y: 560, width: 120, height: 25, hasGrass: false},
+      {x: 320, y: 480, width: 120, height: 25, hasGrass: false},
+      {x: 500, y: 560, width: 120, height: 25, hasGrass: false}
+    ],
+    gems: [{x: 180, y: 500}, {x: 360, y: 420}, {x: 540, y: 500}],
+    bugs: [{x: 450, y: 620, patrolStart: 350, patrolEnd: 600}],
+    chest: {x: 900, y: 600},
+    word: 'ball'
+  },
+  {
+    platforms: [
+      {x: 0, y: 660, width: 1000, height: 40, hasGrass: true},
+      {x: 120, y: 560, width: 115, height: 25, hasGrass: false},
+      {x: 290, y: 480, width: 115, height: 25, hasGrass: false},
+      {x: 460, y: 400, width: 115, height: 25, hasGrass: false},
+      {x: 630, y: 480, width: 115, height: 25, hasGrass: false}
+    ],
+    gems: [{x: 155, y: 500}, {x: 325, y: 420}, {x: 495, y: 340}, {x: 665, y: 420}],
+    bugs: [{x: 400, y: 620, patrolStart: 300, patrolEnd: 550}],
+    chest: {x: 900, y: 600},
+    word: 'fish'
+  },
+  {
+    platforms: [
+      {x: 0, y: 660, width: 1000, height: 40, hasGrass: true},
+      {x: 150, y: 560, width: 120, height: 25, hasGrass: false},
+      {x: 350, y: 470, width: 120, height: 25, hasGrass: false},
+      {x: 550, y: 560, width: 120, height: 25, hasGrass: false}
+    ],
+    gems: [{x: 190, y: 500}, {x: 390, y: 410}, {x: 590, y: 500}, {x: 750, y: 620}],
+    bugs: [{x: 450, y: 620, patrolStart: 320, patrolEnd: 620}],
+    chest: {x: 900, y: 600},
+    word: 'bird'
+  },
+  {
+    platforms: [
+      {x: 0, y: 660, width: 1000, height: 40, hasGrass: true},
+      {x: 100, y: 560, width: 110, height: 25, hasGrass: false},
+      {x: 260, y: 490, width: 110, height: 25, hasGrass: false},
+      {x: 420, y: 420, width: 110, height: 25, hasGrass: false},
+      {x: 580, y: 490, width: 110, height: 25, hasGrass: false}
+    ],
+    gems: [{x: 135, y: 500}, {x: 295, y: 430}, {x: 455, y: 360}, {x: 615, y: 430}],
+    bugs: [{x: 400, y: 620, patrolStart: 280, patrolEnd: 520}],
     chest: {x: 900, y: 600},
     word: 'jump'
   },
   {
     platforms: [
       {x: 0, y: 660, width: 1000, height: 40, hasGrass: true},
-      {x: 150, y: 540, width: 130, height: 25, hasGrass: false},
-      {x: 350, y: 460, width: 130, height: 25, hasGrass: false},
-      {x: 550, y: 540, width: 130, height: 25, hasGrass: false}
+      {x: 130, y: 560, width: 110, height: 25, hasGrass: false},
+      {x: 300, y: 480, width: 110, height: 25, hasGrass: false},
+      {x: 470, y: 400, width: 110, height: 25, hasGrass: false},
+      {x: 640, y: 480, width: 110, height: 25, hasGrass: false}
     ],
-    gems: [
-      {x: 190, y: 480},
-      {x: 390, y: 400},
-      {x: 590, y: 480}
+    gems: [{x: 165, y: 500}, {x: 335, y: 420}, {x: 505, y: 340}, {x: 675, y: 420}],
+    bugs: [{x: 450, y: 620, patrolStart: 300, patrolEnd: 600}],
+    chest: {x: 900, y: 600},
+    word: 'play'
+  },
+
+  // HARDER LEVELS (11-15): 4-5 letter words, 1-2 enemies
+  {
+    platforms: [
+      {x: 0, y: 660, width: 1000, height: 40, hasGrass: true},
+      {x: 100, y: 560, width: 105, height: 25, hasGrass: false},
+      {x: 250, y: 490, width: 105, height: 25, hasGrass: false},
+      {x: 400, y: 420, width: 105, height: 25, hasGrass: false},
+      {x: 550, y: 490, width: 105, height: 25, hasGrass: false},
+      {x: 700, y: 560, width: 105, height: 25, hasGrass: false}
     ],
-    bugs: [
-      {x: 450, y: 620, patrolStart: 300, patrolEnd: 600}
-    ],
+    gems: [{x: 130, y: 500}, {x: 280, y: 430}, {x: 430, y: 360}, {x: 580, y: 430}, {x: 730, y: 500}],
+    bugs: [{x: 350, y: 620, patrolStart: 250, patrolEnd: 500}],
     chest: {x: 900, y: 600},
     word: 'star'
   },
   {
     platforms: [
       {x: 0, y: 660, width: 1000, height: 40, hasGrass: true},
-      {x: 120, y: 560, width: 120, height: 25, hasGrass: false},
-      {x: 300, y: 480, width: 120, height: 25, hasGrass: false},
-      {x: 480, y: 400, width: 120, height: 25, hasGrass: false},
-      {x: 660, y: 480, width: 120, height: 25, hasGrass: false}
+      {x: 90, y: 560, width: 100, height: 25, hasGrass: false},
+      {x: 230, y: 490, width: 100, height: 25, hasGrass: false},
+      {x: 370, y: 420, width: 100, height: 25, hasGrass: false},
+      {x: 510, y: 360, width: 100, height: 25, hasGrass: false},
+      {x: 650, y: 420, width: 100, height: 25, hasGrass: false}
     ],
-    gems: [
-      {x: 160, y: 500},
-      {x: 340, y: 420},
-      {x: 520, y: 340},
-      {x: 700, y: 420}
-    ],
-    bugs: [
-      {x: 400, y: 620, patrolStart: 250, patrolEnd: 550}
-    ],
+    gems: [{x: 120, y: 500}, {x: 260, y: 430}, {x: 400, y: 360}, {x: 540, y: 300}, {x: 680, y: 360}],
+    bugs: [{x: 300, y: 620, patrolStart: 200, patrolEnd: 450}, {x: 650, y: 620, patrolStart: 550, patrolEnd: 800}],
     chest: {x: 900, y: 600},
     word: 'rock'
   },
   {
     platforms: [
       {x: 0, y: 660, width: 1000, height: 40, hasGrass: true},
-      {x: 100, y: 560, width: 110, height: 25, hasGrass: false},
-      {x: 250, y: 490, width: 110, height: 25, hasGrass: false},
-      {x: 400, y: 420, width: 110, height: 25, hasGrass: false},
-      {x: 550, y: 490, width: 110, height: 25, hasGrass: false},
-      {x: 700, y: 560, width: 110, height: 25, hasGrass: false}
+      {x: 110, y: 570, width: 100, height: 25, hasGrass: false},
+      {x: 260, y: 500, width: 100, height: 25, hasGrass: false},
+      {x: 410, y: 430, width: 100, height: 25, hasGrass: false},
+      {x: 560, y: 500, width: 100, height: 25, hasGrass: false},
+      {x: 710, y: 570, width: 100, height: 25, hasGrass: false}
     ],
-    gems: [
-      {x: 135, y: 500},
-      {x: 285, y: 430},
-      {x: 435, y: 360},
-      {x: 585, y: 430},
-      {x: 735, y: 500}
-    ],
-    bugs: [
-      {x: 350, y: 620, patrolStart: 250, patrolEnd: 500}
-    ],
+    gems: [{x: 140, y: 510}, {x: 290, y: 440}, {x: 440, y: 370}, {x: 590, y: 440}, {x: 740, y: 510}],
+    bugs: [{x: 400, y: 620, patrolStart: 280, patrolEnd: 550}],
     chest: {x: 900, y: 600},
     word: 'tree'
   },
   {
     platforms: [
       {x: 0, y: 660, width: 1000, height: 40, hasGrass: true},
-      {x: 80, y: 560, width: 100, height: 25, hasGrass: false},
-      {x: 220, y: 490, width: 100, height: 25, hasGrass: false},
-      {x: 360, y: 420, width: 100, height: 25, hasGrass: false},
-      {x: 500, y: 360, width: 100, height: 25, hasGrass: false},
-      {x: 640, y: 420, width: 100, height: 25, hasGrass: false},
-      {x: 780, y: 490, width: 100, height: 25, hasGrass: false}
+      {x: 80, y: 560, width: 95, height: 25, hasGrass: false},
+      {x: 210, y: 490, width: 95, height: 25, hasGrass: false},
+      {x: 340, y: 420, width: 95, height: 25, hasGrass: false},
+      {x: 470, y: 360, width: 95, height: 25, hasGrass: false},
+      {x: 600, y: 420, width: 95, height: 25, hasGrass: false},
+      {x: 730, y: 490, width: 95, height: 25, hasGrass: false}
     ],
-    gems: [
-      {x: 115, y: 500},
-      {x: 255, y: 430},
-      {x: 395, y: 360},
-      {x: 535, y: 300},
-      {x: 675, y: 360}
-    ],
-    bugs: [
-      {x: 300, y: 620, patrolStart: 200, patrolEnd: 500},
-      {x: 650, y: 620, patrolStart: 550, patrolEnd: 850}
-    ],
+    gems: [{x: 105, y: 500}, {x: 235, y: 430}, {x: 365, y: 360}, {x: 495, y: 300}, {x: 625, y: 360}],
+    bugs: [{x: 300, y: 620, patrolStart: 200, patrolEnd: 480}],
     chest: {x: 900, y: 600},
     word: 'duck'
+  },
+  {
+    platforms: [
+      {x: 0, y: 660, width: 1000, height: 40, hasGrass: true},
+      {x: 100, y: 560, width: 100, height: 25, hasGrass: false},
+      {x: 250, y: 490, width: 100, height: 25, hasGrass: false},
+      {x: 400, y: 420, width: 100, height: 25, hasGrass: false},
+      {x: 550, y: 490, width: 100, height: 25, hasGrass: false},
+      {x: 700, y: 560, width: 100, height: 25, hasGrass: false}
+    ],
+    gems: [{x: 130, y: 500}, {x: 280, y: 430}, {x: 430, y: 360}, {x: 580, y: 430}, {x: 730, y: 500}],
+    bugs: [{x: 350, y: 620, patrolStart: 250, patrolEnd: 520}, {x: 650, y: 620, patrolStart: 550, patrolEnd: 800}],
+    chest: {x: 900, y: 600},
+    word: 'moon'
+  },
+
+  // CHALLENGING LEVELS (16-20): 5 letter words, 2 enemies
+  {
+    platforms: [
+      {x: 0, y: 660, width: 1000, height: 40, hasGrass: true},
+      {x: 90, y: 560, width: 95, height: 25, hasGrass: false},
+      {x: 220, y: 490, width: 95, height: 25, hasGrass: false},
+      {x: 350, y: 420, width: 95, height: 25, hasGrass: false},
+      {x: 480, y: 360, width: 95, height: 25, hasGrass: false},
+      {x: 610, y: 420, width: 95, height: 25, hasGrass: false},
+      {x: 740, y: 490, width: 95, height: 25, hasGrass: false}
+    ],
+    gems: [{x: 115, y: 500}, {x: 245, y: 430}, {x: 375, y: 360}, {x: 505, y: 300}, {x: 635, y: 360}, {x: 765, y: 430}],
+    bugs: [{x: 300, y: 620, patrolStart: 200, patrolEnd: 480}, {x: 650, y: 620, patrolStart: 550, patrolEnd: 820}],
+    chest: {x: 900, y: 600},
+    word: 'happy'
+  },
+  {
+    platforms: [
+      {x: 0, y: 660, width: 1000, height: 40, hasGrass: true},
+      {x: 80, y: 570, width: 95, height: 25, hasGrass: false},
+      {x: 200, y: 500, width: 95, height: 25, hasGrass: false},
+      {x: 320, y: 430, width: 95, height: 25, hasGrass: false},
+      {x: 440, y: 370, width: 95, height: 25, hasGrass: false},
+      {x: 560, y: 430, width: 95, height: 25, hasGrass: false},
+      {x: 680, y: 500, width: 95, height: 25, hasGrass: false}
+    ],
+    gems: [{x: 105, y: 510}, {x: 225, y: 440}, {x: 345, y: 370}, {x: 465, y: 310}, {x: 585, y: 370}, {x: 705, y: 440}],
+    bugs: [{x: 300, y: 620, patrolStart: 200, patrolEnd: 500}, {x: 600, y: 620, patrolStart: 500, patrolEnd: 780}],
+    chest: {x: 900, y: 600},
+    word: 'house'
+  },
+  {
+    platforms: [
+      {x: 0, y: 660, width: 1000, height: 40, hasGrass: true},
+      {x: 100, y: 560, width: 90, height: 25, hasGrass: false},
+      {x: 230, y: 490, width: 90, height: 25, hasGrass: false},
+      {x: 360, y: 420, width: 90, height: 25, hasGrass: false},
+      {x: 490, y: 360, width: 90, height: 25, hasGrass: false},
+      {x: 620, y: 420, width: 90, height: 25, hasGrass: false},
+      {x: 750, y: 490, width: 90, height: 25, hasGrass: false}
+    ],
+    gems: [{x: 125, y: 500}, {x: 255, y: 430}, {x: 385, y: 360}, {x: 515, y: 300}, {x: 645, y: 360}],
+    bugs: [{x: 320, y: 620, patrolStart: 220, patrolEnd: 500}, {x: 670, y: 620, patrolStart: 560, patrolEnd: 840}],
+    chest: {x: 900, y: 600},
+    word: 'water'
+  },
+  {
+    platforms: [
+      {x: 0, y: 660, width: 1000, height: 40, hasGrass: true},
+      {x: 90, y: 560, width: 90, height: 25, hasGrass: false},
+      {x: 210, y: 490, width: 90, height: 25, hasGrass: false},
+      {x: 330, y: 420, width: 90, height: 25, hasGrass: false},
+      {x: 450, y: 360, width: 90, height: 25, hasGrass: false},
+      {x: 570, y: 420, width: 90, height: 25, hasGrass: false},
+      {x: 690, y: 490, width: 90, height: 25, hasGrass: false}
+    ],
+    gems: [{x: 115, y: 500}, {x: 235, y: 430}, {x: 355, y: 360}, {x: 475, y: 300}, {x: 595, y: 360}, {x: 715, y: 430}],
+    bugs: [{x: 280, y: 620, patrolStart: 180, patrolEnd: 440}, {x: 620, y: 620, patrolStart: 520, patrolEnd: 780}],
+    chest: {x: 900, y: 600},
+    word: 'smile'
+  },
+  {
+    platforms: [
+      {x: 0, y: 660, width: 1000, height: 40, hasGrass: true},
+      {x: 80, y: 560, width: 90, height: 25, hasGrass: false},
+      {x: 200, y: 490, width: 90, height: 25, hasGrass: false},
+      {x: 320, y: 420, width: 90, height: 25, hasGrass: false},
+      {x: 440, y: 360, width: 90, height: 25, hasGrass: false},
+      {x: 560, y: 420, width: 90, height: 25, hasGrass: false},
+      {x: 680, y: 490, width: 90, height: 25, hasGrass: false},
+      {x: 800, y: 560, width: 90, height: 25, hasGrass: false}
+    ],
+    gems: [{x: 105, y: 500}, {x: 225, y: 430}, {x: 345, y: 360}, {x: 465, y: 300}, {x: 585, y: 360}, {x: 705, y: 430}],
+    bugs: [{x: 300, y: 620, patrolStart: 200, patrolEnd: 480}, {x: 650, y: 620, patrolStart: 540, patrolEnd: 800}],
+    chest: {x: 900, y: 600},
+    word: 'apple'
+  },
+
+  // ADVANCED LEVELS (21-25): 5-6 letter words, harder platforming
+  {
+    platforms: [
+      {x: 0, y: 660, width: 1000, height: 40, hasGrass: true},
+      {x: 70, y: 560, width: 85, height: 25, hasGrass: false},
+      {x: 180, y: 490, width: 85, height: 25, hasGrass: false},
+      {x: 290, y: 420, width: 85, height: 25, hasGrass: false},
+      {x: 400, y: 360, width: 85, height: 25, hasGrass: false},
+      {x: 510, y: 420, width: 85, height: 25, hasGrass: false},
+      {x: 620, y: 490, width: 85, height: 25, hasGrass: false},
+      {x: 730, y: 560, width: 85, height: 25, hasGrass: false}
+    ],
+    gems: [{x: 95, y: 500}, {x: 205, y: 430}, {x: 315, y: 360}, {x: 425, y: 300}, {x: 535, y: 360}, {x: 645, y: 430}],
+    bugs: [{x: 250, y: 620, patrolStart: 150, patrolEnd: 400}, {x: 580, y: 620, patrolStart: 480, patrolEnd: 730}],
+    chest: {x: 900, y: 600},
+    word: 'train'
+  },
+  {
+    platforms: [
+      {x: 0, y: 660, width: 1000, height: 40, hasGrass: true},
+      {x: 80, y: 560, width: 85, height: 25, hasGrass: false},
+      {x: 190, y: 490, width: 85, height: 25, hasGrass: false},
+      {x: 300, y: 420, width: 85, height: 25, hasGrass: false},
+      {x: 410, y: 360, width: 85, height: 25, hasGrass: false},
+      {x: 520, y: 420, width: 85, height: 25, hasGrass: false},
+      {x: 630, y: 490, width: 85, height: 25, hasGrass: false},
+      {x: 740, y: 560, width: 85, height: 25, hasGrass: false}
+    ],
+    gems: [{x: 105, y: 500}, {x: 215, y: 430}, {x: 325, y: 360}, {x: 435, y: 300}, {x: 545, y: 360}, {x: 655, y: 430}],
+    bugs: [{x: 280, y: 620, patrolStart: 180, patrolEnd: 420}, {x: 600, y: 620, patrolStart: 500, patrolEnd: 750}],
+    chest: {x: 900, y: 600},
+    word: 'green'
+  },
+  {
+    platforms: [
+      {x: 0, y: 660, width: 1000, height: 40, hasGrass: true},
+      {x: 70, y: 560, width: 85, height: 25, hasGrass: false},
+      {x: 175, y: 490, width: 85, height: 25, hasGrass: false},
+      {x: 280, y: 420, width: 85, height: 25, hasGrass: false},
+      {x: 385, y: 360, width: 85, height: 25, hasGrass: false},
+      {x: 490, y: 420, width: 85, height: 25, hasGrass: false},
+      {x: 595, y: 490, width: 85, height: 25, hasGrass: false},
+      {x: 700, y: 560, width: 85, height: 25, hasGrass: false}
+    ],
+    gems: [{x: 95, y: 500}, {x: 200, y: 430}, {x: 305, y: 360}, {x: 410, y: 300}, {x: 515, y: 360}, {x: 620, y: 430}, {x: 725, y: 500}],
+    bugs: [{x: 270, y: 620, patrolStart: 170, patrolEnd: 410}, {x: 580, y: 620, patrolStart: 480, patrolEnd: 720}],
+    chest: {x: 900, y: 600},
+    word: 'blocks'
+  },
+  {
+    platforms: [
+      {x: 0, y: 660, width: 1000, height: 40, hasGrass: true},
+      {x: 60, y: 560, width: 80, height: 25, hasGrass: false},
+      {x: 160, y: 490, width: 80, height: 25, hasGrass: false},
+      {x: 260, y: 420, width: 80, height: 25, hasGrass: false},
+      {x: 360, y: 360, width: 80, height: 25, hasGrass: false},
+      {x: 460, y: 420, width: 80, height: 25, hasGrass: false},
+      {x: 560, y: 490, width: 80, height: 25, hasGrass: false},
+      {x: 660, y: 560, width: 80, height: 25, hasGrass: false},
+      {x: 760, y: 490, width: 80, height: 25, hasGrass: false}
+    ],
+    gems: [{x: 85, y: 500}, {x: 185, y: 430}, {x: 285, y: 360}, {x: 385, y: 300}, {x: 485, y: 360}, {x: 585, y: 430}, {x: 685, y: 500}],
+    bugs: [{x: 260, y: 620, patrolStart: 160, patrolEnd: 400}, {x: 570, y: 620, patrolStart: 460, patrolEnd: 710}],
+    chest: {x: 900, y: 600},
+    word: 'friend'
+  },
+  {
+    platforms: [
+      {x: 0, y: 660, width: 1000, height: 40, hasGrass: true},
+      {x: 60, y: 560, width: 80, height: 25, hasGrass: false},
+      {x: 155, y: 490, width: 80, height: 25, hasGrass: false},
+      {x: 250, y: 420, width: 80, height: 25, hasGrass: false},
+      {x: 345, y: 360, width: 80, height: 25, hasGrass: false},
+      {x: 440, y: 420, width: 80, height: 25, hasGrass: false},
+      {x: 535, y: 490, width: 80, height: 25, hasGrass: false},
+      {x: 630, y: 560, width: 80, height: 25, hasGrass: false},
+      {x: 725, y: 490, width: 80, height: 25, hasGrass: false}
+    ],
+    gems: [{x: 85, y: 500}, {x: 180, y: 430}, {x: 275, y: 360}, {x: 370, y: 300}, {x: 465, y: 360}, {x: 560, y: 430}, {x: 655, y: 500}, {x: 750, y: 430}],
+    bugs: [{x: 250, y: 620, patrolStart: 150, patrolEnd: 380}, {x: 550, y: 620, patrolStart: 440, patrolEnd: 680}],
+    chest: {x: 900, y: 600},
+    word: 'yellow'
   }
 ];
 
