@@ -48,11 +48,11 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px;
+    padding: 12px 15px;
     background: rgba(139, 69, 19, 0.9);
     color: white;
     font-weight: bold;
-    font-size: 28px;
+    font-size: 24px;
     text-shadow: 3px 3px 0px rgba(0,0,0,0.5);
     border-bottom: 4px solid #654321;
   }
@@ -73,27 +73,29 @@
     left: 50%;
     transform: translate(-50%, -50%);
     background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-    padding: 40px 60px;
+    padding: 30px 50px;
     border-radius: 20px;
     box-shadow: 0 15px 50px rgba(0,0,0,0.5);
     display: none;
     text-align: center;
     border: 6px solid #8B4513;
+    max-width: 85%;
+    z-index: 1000;
   }
 
   #wordPrompt h2 {
     color: #8B4513;
-    margin-bottom: 20px;
-    font-size: 36px;
+    margin-bottom: 15px;
+    font-size: 32px;
     text-shadow: 2px 2px 0px rgba(255,255,255,0.5);
   }
 
   #wordDisplay {
-    font-size: 64px;
+    font-size: 56px;
     font-weight: bold;
     color: #fff;
-    letter-spacing: 15px;
-    margin: 25px 0;
+    letter-spacing: 12px;
+    margin: 20px 0;
     font-family: 'Courier New', monospace;
     text-shadow: 4px 4px 0px rgba(0,0,0,0.3);
   }
@@ -116,6 +118,8 @@
     box-shadow: 0 15px 60px rgba(0,0,0,0.5);
     pointer-events: all;
     border: 8px solid #8B4513;
+    max-width: 90%;
+    z-index: 1000;
   }
 
   #message h1 {
