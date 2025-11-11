@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WorkQuest Jr. - Blocky Adventure</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+  }
+
+  body {
+    overflow: hidden;
+    font-family: 'Courier New', monospace;
+    background: linear-gradient(180deg, #4A90E2 0%, #87CEEB 50%, #90EE90 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  #gameContainer {
+    position: relative;
+    box-shadow: 0 10px 50px rgba(0,0,0,0.4);
+    border: 8px solid #8B4513;
+    background: #87CEEB;
+  }
+
+  canvas {
+    display: block;
+    background: linear-gradient(180deg, #87CEEB 0%, #E0F6FF 50%, #90EE90 100%);
+  }
+
+  #ui {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    pointer-events: none;
+  }
+
+  #hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: rgba(139, 69, 19, 0.9);
+    color: white;
+    font-weight: bold;
+    font-size: 28px;
+    text-shadow: 3px 3px 0px rgba(0,0,0,0.5);
+    border-bottom: 4px solid #654321;
+  }
+
+  .stat {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 15px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 8px;
+    border: 2px solid rgba(255,255,255,0.3);
+  }
+
+  #wordPrompt {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    padding: 40px 60px;
+    border-radius: 20px;
+    box-shadow: 0 15px 50px rgba(0,0,0,0.5);
+    display: none;
+    text-align: center;
+    border: 6px solid #8B4513;
+  }
+
+  #wordPrompt h2 {
+    color: #8B4513;
+    margin-bottom: 20px;
+    font-size: 36px;
+    text-shadow: 2px 2px 0px rgba(255,255,255,0.5);
+  }
+
+  #wordDisplay {
+    font-size: 64px;
+    font-weight: bold;
+    color: #fff;
+    letter-spacing: 15px;
+    margin: 25px 0;
+    font-family: 'Courier New', monospace;
+    text-shadow: 4px 4px 0px rgba(0,0,0,0.3);
+  }
+
+  .correct {
+    color: #00FF00;
+    text-shadow: 2px 2px 0px #006400;
+  }
+
+  #message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    padding: 50px 80px;
+    border-radius: 25px;
+    text-align: center;
+    display: none;
+    box-shadow: 0 15px 60px rgba(0,0,0,0.5);
+    pointer-events: all;
+    border: 8px solid #8B4513;
+  }
+
+  #message h1 {
+    color: #8B4513;
+    margin-bottom: 25px;
+    font-size: 48px;
+    text-shadow: 3px 3px 0px rgba(255,255,255,0.5);
+  }
+
+  #message p {
+    color: #654321;
+    margin: 15px 0;
+    font-size: 28px;
+    font-weight: bold;
+  }
+
+  #message button {
+    margin-top: 25px;
+    padding: 18px 45px;
+    font-size: 28px;
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+    border: 4px solid #2d6b2f;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+    box-shadow: 0 6px 0 #1b4d1e;
+    transition: all 0.1s;
+  }
+
+  #message button:hover {
+    transform: translateY(2px);
+    box-shadow: 0 4px 0 #1b4d1e;
+  }
+
+  #message button:active {
+    transform: translateY(6px);
+    box-shadow: 0 0px 0 #1b4d1e;
+  }
+
+  #instructions {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(139, 69, 19, 0.95);
+    color: white;
+    padding: 15px 30px;
+    border-radius: 12px;
+    font-size: 22px;
+    text-align: center;
+    border: 3px solid #654321;
+    font-weight: bold;
+    text-shadow: 2px 2px 0px rgba(0,0,0,0.5);
+  }
+
+  #encouragement {
+    position: absolute;
+    top: 120px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #FF69B4 0%, #FF1493 100%);
+    color: white;
+    padding: 15px 30px;
+    border-radius: 15px;
+    font-size: 28px;
+    font-weight: bold;
+    text-shadow: 2px 2px 0px rgba(0,0,0,0.5);
+    border: 4px solid #C71585;
+    display: none;
+    animation: bounce 0.5s ease;
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateX(-50%) scale(1); }
+    50% { transform: translateX(-50%) scale(1.1); }
+  }
+</style>
+</head>
+<body>
+<div id="gameContainer">
+  <canvas id="gameCanvas" width="1000" height="700"></canvas>
+  <div id="ui">
+    <div id="hud">
+      <div class="stat">
+        <span>⭐ <span id="score">0</span></span>
+      </div>
+      <div class="stat">
+        <span>💎 <span id="gems">0</span>/<span id="totalGems">0</span></span>
+      </div>
+      <div class="stat">
+        <span>🏆 Level <span id="level">1</span></span>
+      </div>
+      <div class="stat">
+        <span>❤️ <span id="lives">5</span></span>
+      </div>
+    </div>
+    <div id="encouragement"></div>
+    <div id="wordPrompt">
+      <h2>Type this word! 📝</h2>
+      <div id="wordDisplay"></div>
+    </div>
+    <div id="message">
+      <h1 id="messageTitle">Great Job!</h1>
+      <p id="messageText"></p>
+      <button id="messageButton">Continue</button>
+    </div>
+    <div id="instructions">
+      ⬅️ ➡️ Move | ⬆️ Jump | Collect gems 💎 | Reach the chest 📦
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================================
+// GAME CONFIGURATION
+// ============================================================================
+const CONFIG = {
+  canvas: { width: 1000, height: 700 },
+  physics: { gravity: 0.5, friction: 0.85, jumpPower: 11 },
+  player: { width: 40, height: 40, speed: 4.5 },
+  blockSize: 40,
+  colors: {
+    player: { primary: '#00CED1', secondary: '#008B8B', face: '#000' },
+    platform: { top: '#8B4513', side: '#654321', grass: '#228B22' },
+    gem: { primary: '#FFD700', secondary: '#FFA500' },
+    bug: { primary: '#DC143C', secondary: '#8B0000', eyes: '#000' },
+    chest: { primary: '#DAA520', secondary: '#8B6914', lock: '#FFD700' },
+    powerup: { primary: '#9370DB', secondary: '#6A5ACD' },
+    sky: '#87CEEB',
+    cloud: '#FFFFFF'
+  }
+};
+
+const ENCOURAGEMENT = [
+  "Awesome! 🌟",
+  "Great job! 🎉",
+  "You're amazing! ⭐",
+  "Super! 🚀",
+  "Fantastic! 🎊",
+  "Well done! 👏",
+  "Perfect! 💫"
+];
+
+// ============================================================================
+// UTILITY CLASSES
+// ============================================================================
+class Vector2D {
+  constructor(x = 0, y = 0) {
+    this.x = x;
+    this.y = y;
+  }
+
+  add(v) {
+    this.x += v.x;
+    this.y += v.y;
+    return this;
+  }
+
+  clone() {
+    return new Vector2D(this.x, this.y);
+  }
+}
+
+class Rectangle {
+  constructor(x, y, width, height) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+  }
+
+  intersects(other) {
+    return (
+      this.x < other.x + other.width &&
+      this.x + this.width > other.x &&
+      this.y < other.y + other.height &&
+      this.y + this.height > other.y
+    );
+  }
+}
+
+// ============================================================================
+// PARTICLE SYSTEM
+// ============================================================================
+class Particle {
+  constructor(x, y, color) {
+    this.pos = new Vector2D(x, y);
+    this.vel = new Vector2D(Math.random() * 4 - 2, Math.random() * 4 - 6);
+    this.color = color;
+    this.life = 1.0;
+    this.size = Math.random() * 6 + 4;
+  }
+
+  update() {
+    this.vel.y += CONFIG.physics.gravity * 0.3;
+    this.pos.add(this.vel);
+    this.life -= 0.02;
+    return this.life > 0;
+  }
+
+  draw(ctx) {
+    ctx.save();
+    ctx.globalAlpha = this.life;
+    ctx.fillStyle = this.color;
+    ctx.fillRect(this.pos.x - this.size / 2, this.pos.y - this.size / 2, this.size, this.size);
+    ctx.restore();
+  }
+}
+
+class ParticleSystem {
+  constructor() {
+    this.particles = [];
+  }
+
+  emit(x, y, color, count = 15) {
+    for (let i = 0; i < count; i++) {
+      this.particles.push(new Particle(x, y, color));
+    }
+  }
+
+  update() {
+    this.particles = this.particles.filter(p => p.update());
+  }
+
+  draw(ctx) {
+    this.particles.forEach(p => p.draw(ctx));
+  }
+}
+
+// ============================================================================
+// GAME ENTITIES
+// ============================================================================
+class Entity {
+  constructor(x, y, width, height) {
+    this.pos = new Vector2D(x, y);
+    this.width = width;
+    this.height = height;
+    this.vel = new Vector2D(0, 0);
+  }
+
+  getBounds() {
+    return new Rectangle(this.pos.x, this.pos.y, this.width, this.height);
+  }
+
+  drawBlocky(ctx, colors, addDetails = false) {
+    const x = this.pos.x;
+    const y = this.pos.y;
+    const w = this.width;
+    const h = this.height;
+
+    // Main body
+    ctx.fillStyle = colors.primary;
+    ctx.fillRect(x, y, w, h);
+
+    // Add 3D effect
+    ctx.fillStyle = colors.secondary;
+    ctx.fillRect(x, y + h - 4, w, 4); // Bottom shadow
+    ctx.fillRect(x + w - 4, y, 4, h); // Right shadow
+
+    // Highlight
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.fillRect(x, y, w, 4); // Top highlight
+    ctx.fillRect(x, y, 4, h); // Left highlight
+
+    // Pixelated border
+    ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x, y, w, h);
+  }
+}
+
+class Player extends Entity {
+  constructor(x, y) {
+    super(x, y, CONFIG.player.width, CONFIG.player.height);
+    this.grounded = false;
+    this.jumpCount = 0;
+    this.maxJumps = 1; // Single jump for easier control
+    this.invincible = false;
+    this.invincibleTime = 0;
+  }
+
+  update(keys, platforms) {
+    // Horizontal movement
+    if (keys['ArrowLeft'] || keys['a'] || keys['A']) {
+      this.vel.x = -CONFIG.player.speed;
+    } else if (keys['ArrowRight'] || keys['d'] || keys['D']) {
+      this.vel.x = CONFIG.player.speed;
+    } else {
+      this.vel.x *= CONFIG.physics.friction;
+    }
+
+    // Jumping
+    if ((keys['ArrowUp'] || keys['w'] || keys['W'] || keys[' ']) && this.jumpCount < this.maxJumps) {
+      this.vel.y = -CONFIG.physics.jumpPower;
+      this.jumpCount++;
+      keys['ArrowUp'] = false;
+      keys['w'] = false;
+      keys['W'] = false;
+      keys[' '] = false;
+    }
+
+    // Apply gravity
+    this.vel.y += CONFIG.physics.gravity;
+
+    // Update position
+    this.pos.add(this.vel);
+
+    // Ground collision
+    this.grounded = false;
+    platforms.forEach(platform => {
+      if (this.vel.y > 0 && this.collidesWith(platform)) {
+        this.pos.y = platform.pos.y - this.height;
+        this.vel.y = 0;
+        this.grounded = true;
+        this.jumpCount = 0;
+      }
+    });
+
+    // Screen bounds
+    this.pos.x = Math.max(0, Math.min(CONFIG.canvas.width - this.width, this.pos.x));
+
+    // Fall death
+    if (this.pos.y > CONFIG.canvas.height) {
+      return 'fell';
+    }
+
+    // Update invincibility
+    if (this.invincible) {
+      this.invincibleTime--;
+      if (this.invincibleTime <= 0) {
+        this.invincible = false;
+      }
+    }
+
+    return null;
+  }
+
+  collidesWith(other) {
+    return this.getBounds().intersects(other.getBounds());
+  }
+
+  draw(ctx) {
+    ctx.save();
+
+    // Invincibility flash effect
+    if (this.invincible && Math.floor(this.invincibleTime / 10) % 2 === 0) {
+      ctx.globalAlpha = 0.5;
+    }
+
+    // Draw blocky player (Minecraft Steve style)
+    this.drawBlocky(ctx, CONFIG.colors.player);
+
+    // Draw face (two square eyes and smile)
+    ctx.fillStyle = CONFIG.colors.player.face;
+    // Eyes
+    ctx.fillRect(this.pos.x + 10, this.pos.y + 12, 6, 6);
+    ctx.fillRect(this.pos.x + 24, this.pos.y + 12, 6, 6);
+    // Smile
+    ctx.fillRect(this.pos.x + 10, this.pos.y + 26, 4, 4);
+    ctx.fillRect(this.pos.x + 14, this.pos.y + 28, 12, 4);
+    ctx.fillRect(this.pos.x + 26, this.pos.y + 26, 4, 4);
+
+    ctx.restore();
+  }
+}
+
+class Platform extends Entity {
+  constructor(x, y, width, height, hasGrass = false) {
+    super(x, y, width, height);
+    this.hasGrass = hasGrass;
+  }
+
+  draw(ctx) {
+    const x = this.pos.x;
+    const y = this.pos.y;
+    const w = this.width;
+    const h = this.height;
+
+    // Draw grass top if ground platform
+    if (this.hasGrass) {
+      ctx.fillStyle = CONFIG.colors.platform.grass;
+      ctx.fillRect(x, y, w, 8);
+    }
+
+    // Draw dirt/stone blocks
+    ctx.fillStyle = CONFIG.colors.platform.top;
+    ctx.fillRect(x, y + (this.hasGrass ? 8 : 0), w, h - (this.hasGrass ? 8 : 0));
+
+    // Draw blocky texture
+    const blockSize = 20;
+    for (let bx = 0; bx < w; bx += blockSize) {
+      for (let by = (this.hasGrass ? 8 : 0); by < h; by += blockSize) {
+        ctx.strokeStyle = CONFIG.colors.platform.side;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x + bx, y + by, blockSize, blockSize);
+      }
+    }
+
+    // Add 3D shadow
+    ctx.fillStyle = CONFIG.colors.platform.side;
+    ctx.fillRect(x, y + h - 4, w, 4);
+    ctx.fillRect(x + w - 4, y, 4, h);
+  }
+}
+
+class Gem extends Entity {
+  constructor(x, y) {
+    super(x, y, 30, 30);
+    this.collected = false;
+    this.rotation = 0;
+    this.floatOffset = 0;
+  }
+
+  update() {
+    this.rotation += 0.08;
+    this.floatOffset = Math.sin(Date.now() / 300) * 8;
+  }
+
+  draw(ctx) {
+    if (this.collected) return;
+
+    ctx.save();
+    ctx.translate(this.pos.x + this.width / 2, this.pos.y + this.height / 2 + this.floatOffset);
+    ctx.rotate(this.rotation);
+
+    // Draw blocky gem (diamond shape)
+    const size = 15;
+
+    // Main diamond
+    ctx.beginPath();
+    ctx.moveTo(0, -size);
+    ctx.lineTo(size, 0);
+    ctx.lineTo(0, size);
+    ctx.lineTo(-size, 0);
+    ctx.closePath();
+    ctx.fillStyle = CONFIG.colors.gem.primary;
+    ctx.fill();
+
+    // Highlights for blocky effect
+    ctx.beginPath();
+    ctx.moveTo(0, -size);
+    ctx.lineTo(size, 0);
+    ctx.lineTo(0, 0);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+    ctx.fill();
+
+    // Shadow
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0, size);
+    ctx.lineTo(-size, 0);
+    ctx.closePath();
+    ctx.fillStyle = CONFIG.colors.gem.secondary;
+    ctx.fill();
+
+    // Thick border
+    ctx.beginPath();
+    ctx.moveTo(0, -size);
+    ctx.lineTo(size, 0);
+    ctx.lineTo(0, size);
+    ctx.lineTo(-size, 0);
+    ctx.closePath();
+    ctx.strokeStyle = '#B8860B';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    ctx.restore();
+  }
+}
+
+class Bug extends Entity {
+  constructor(x, y, patrolStart, patrolEnd) {
+    super(x, y, 40, 40);
+    this.patrolStart = patrolStart;
+    this.patrolEnd = patrolEnd;
+    this.speed = 1.2; // Slower for easier avoidance
+    this.direction = 1;
+  }
+
+  update() {
+    this.pos.x += this.speed * this.direction;
+
+    if (this.pos.x <= this.patrolStart || this.pos.x >= this.patrolEnd) {
+      this.direction *= -1;
+    }
+  }
+
+  draw(ctx) {
+    ctx.save();
+
+    // Draw blocky bug body
+    this.drawBlocky(ctx, CONFIG.colors.bug);
+
+    // Eyes (angry looking)
+    ctx.fillStyle = 'white';
+    ctx.fillRect(this.pos.x + 6, this.pos.y + 10, 10, 10);
+    ctx.fillRect(this.pos.x + 24, this.pos.y + 10, 10, 10);
+
+    ctx.fillStyle = CONFIG.colors.bug.eyes;
+    ctx.fillRect(this.pos.x + 10, this.pos.y + 14, 6, 6);
+    ctx.fillRect(this.pos.x + 28, this.pos.y + 14, 6, 6);
+
+    // Blocky antennae
+    ctx.fillStyle = CONFIG.colors.bug.secondary;
+    ctx.fillRect(this.pos.x + 8, this.pos.y - 6, 4, 8);
+    ctx.fillRect(this.pos.x + 28, this.pos.y - 6, 4, 8);
+
+    // Antenna tips
+    ctx.fillStyle = CONFIG.colors.bug.primary;
+    ctx.fillRect(this.pos.x + 6, this.pos.y - 8, 8, 4);
+    ctx.fillRect(this.pos.x + 26, this.pos.y - 8, 8, 4);
+
+    ctx.restore();
+  }
+}
+
+class Chest extends Entity {
+  constructor(x, y) {
+    super(x, y, 50, 50);
+    this.open = false;
+    this.pulsePhase = 0;
+  }
+
+  update() {
+    this.pulsePhase += 0.1;
+  }
+
+  draw(ctx) {
+    if (!this.open) return;
+
+    ctx.save();
+
+    const x = this.pos.x;
+    const y = this.pos.y;
+    const w = this.width;
+    const h = this.height;
+
+    // Glow effect when open
+    if (Math.floor(this.pulsePhase * 2) % 2 === 0) {
+      ctx.shadowBlur = 20;
+      ctx.shadowColor = CONFIG.colors.chest.lock;
+    }
+
+    // Main chest body
+    ctx.fillStyle = CONFIG.colors.chest.primary;
+    ctx.fillRect(x, y, w, h);
+
+    // 3D effect
+    ctx.fillStyle = CONFIG.colors.chest.secondary;
+    ctx.fillRect(x, y + h - 6, w, 6); // Bottom
+    ctx.fillRect(x + w - 6, y, 6, h); // Right side
+
+    // Highlight
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.fillRect(x, y, w, 6); // Top
+    ctx.fillRect(x, y, 6, h); // Left side
+
+    // Lock/latch
+    ctx.fillStyle = CONFIG.colors.chest.lock;
+    ctx.fillRect(x + w / 2 - 8, y + h / 2 - 8, 16, 16);
+
+    ctx.fillStyle = CONFIG.colors.chest.secondary;
+    ctx.fillRect(x + w / 2 - 4, y + h / 2 - 4, 8, 8);
+
+    // Border
+    ctx.strokeStyle = 'rgba(0,0,0,0.6)';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(x, y, w, h);
+
+    ctx.restore();
+  }
+}
+
+// ============================================================================
+// LEVEL SYSTEM
+// ============================================================================
+class Level {
+  constructor(config) {
+    this.platforms = config.platforms.map(p =>
+      new Platform(p.x, p.y, p.width, p.height, p.hasGrass)
+    );
+    this.gems = config.gems.map(g => new Gem(g.x, g.y));
+    this.bugs = config.bugs.map(b => new Bug(b.x, b.y, b.patrolStart, b.patrolEnd));
+    this.chest = new Chest(config.chest.x, config.chest.y);
+    this.word = config.word;
+  }
+}
+
+const LEVELS = [
+  {
+    platforms: [
+      {x: 0, y: 660, width: 1000, height: 40, hasGrass: true},
+      {x: 200, y: 540, width: 150, height: 25, hasGrass: false},
+      {x: 450, y: 440, width: 150, height: 25, hasGrass: false}
+    ],
+    gems: [
+      {x: 250, y: 480},
+      {x: 500, y: 380}
+    ],
+    bugs: [],
+    chest: {x: 900, y: 600},
+    word: 'jump'
+  },
+  {
+    platforms: [
+      {x: 0, y: 660, width: 1000, height: 40, hasGrass: true},
+      {x: 150, y: 540, width: 130, height: 25, hasGrass: false},
+      {x: 350, y: 460, width: 130, height: 25, hasGrass: false},
+      {x: 550, y: 540, width: 130, height: 25, hasGrass: false}
+    ],
+    gems: [
+      {x: 190, y: 480},
+      {x: 390, y: 400},
+      {x: 590, y: 480}
+    ],
+    bugs: [
+      {x: 450, y: 620, patrolStart: 300, patrolEnd: 600}
+    ],
+    chest: {x: 900, y: 600},
+    word: 'star'
+  },
+  {
+    platforms: [
+      {x: 0, y: 660, width: 1000, height: 40, hasGrass: true},
+      {x: 120, y: 560, width: 120, height: 25, hasGrass: false},
+      {x: 300, y: 480, width: 120, height: 25, hasGrass: false},
+      {x: 480, y: 400, width: 120, height: 25, hasGrass: false},
+      {x: 660, y: 480, width: 120, height: 25, hasGrass: false}
+    ],
+    gems: [
+      {x: 160, y: 500},
+      {x: 340, y: 420},
+      {x: 520, y: 340},
+      {x: 700, y: 420}
+    ],
+    bugs: [
+      {x: 400, y: 620, patrolStart: 250, patrolEnd: 550}
+    ],
+    chest: {x: 900, y: 600},
+    word: 'rock'
+  },
+  {
+    platforms: [
+      {x: 0, y: 660, width: 1000, height: 40, hasGrass: true},
+      {x: 100, y: 560, width: 110, height: 25, hasGrass: false},
+      {x: 250, y: 490, width: 110, height: 25, hasGrass: false},
+      {x: 400, y: 420, width: 110, height: 25, hasGrass: false},
+      {x: 550, y: 490, width: 110, height: 25, hasGrass: false},
+      {x: 700, y: 560, width: 110, height: 25, hasGrass: false}
+    ],
+    gems: [
+      {x: 135, y: 500},
+      {x: 285, y: 430},
+      {x: 435, y: 360},
+      {x: 585, y: 430},
+      {x: 735, y: 500}
+    ],
+    bugs: [
+      {x: 350, y: 620, patrolStart: 250, patrolEnd: 500}
+    ],
+    chest: {x: 900, y: 600},
+    word: 'tree'
+  },
+  {
+    platforms: [
+      {x: 0, y: 660, width: 1000, height: 40, hasGrass: true},
+      {x: 80, y: 560, width: 100, height: 25, hasGrass: false},
+      {x: 220, y: 490, width: 100, height: 25, hasGrass: false},
+      {x: 360, y: 420, width: 100, height: 25, hasGrass: false},
+      {x: 500, y: 360, width: 100, height: 25, hasGrass: false},
+      {x: 640, y: 420, width: 100, height: 25, hasGrass: false},
+      {x: 780, y: 490, width: 100, height: 25, hasGrass: false}
+    ],
+    gems: [
+      {x: 115, y: 500},
+      {x: 255, y: 430},
+      {x: 395, y: 360},
+      {x: 535, y: 300},
+      {x: 675, y: 360}
+    ],
+    bugs: [
+      {x: 300, y: 620, patrolStart: 200, patrolEnd: 500},
+      {x: 650, y: 620, patrolStart: 550, patrolEnd: 850}
+    ],
+    chest: {x: 900, y: 600},
+    word: 'duck'
+  }
+];
+
+// ============================================================================
+// GAME STATE MACHINE
+// ============================================================================
+class GameState {
+  constructor(game) {
+    this.game = game;
+  }
+
+  enter() {}
+  exit() {}
+  update(keys) {}
+  draw(ctx) {}
+}
+
+class PlayingState extends GameState {
+  enter() {
+    document.getElementById('message').style.display = 'none';
+    document.getElementById('instructions').style.display = 'block';
+  }
+
+  update(keys) {
+    const result = this.game.player.update(keys, this.game.currentLevel.platforms);
+
+    if (result === 'fell') {
+      this.game.loseLife();
+      return;
+    }
+
+    // Update entities
+    this.game.currentLevel.gems.forEach(gem => gem.update());
+    this.game.currentLevel.bugs.forEach(bug => bug.update());
+    this.game.currentLevel.chest.update();
+
+    // Gem collection
+    this.game.currentLevel.gems.forEach(gem => {
+      if (!gem.collected && this.game.player.collidesWith(gem)) {
+        gem.collected = true;
+        this.game.collectGem(gem);
+      }
+    });
+
+    // Bug collision (more forgiving - must be pretty close)
+    if (!this.game.player.invincible) {
+      this.game.currentLevel.bugs.forEach(bug => {
+        // More forgiving collision - reduce hitbox
+        const playerCenter = {
+          x: this.game.player.pos.x + this.game.player.width / 2,
+          y: this.game.player.pos.y + this.game.player.height / 2
+        };
+        const bugCenter = {
+          x: bug.pos.x + bug.width / 2,
+          y: bug.pos.y + bug.height / 2
+        };
+        const distance = Math.hypot(playerCenter.x - bugCenter.x, playerCenter.y - bugCenter.y);
+
+        if (distance < 30) { // More forgiving than full collision
+          this.game.loseLife();
+        }
+      });
+    }
+
+    // Check if all gems collected
+    const allGemsCollected = this.game.currentLevel.gems.every(g => g.collected);
+    if (allGemsCollected && !this.game.currentLevel.chest.open) {
+      this.game.currentLevel.chest.open = true;
+      this.game.score += 100;
+      this.game.showEncouragement();
+    }
+
+    // Check chest collision
+    if (this.game.currentLevel.chest.open &&
+        this.game.player.collidesWith(this.game.currentLevel.chest)) {
+      this.game.changeState(new TypingState(this.game));
+    }
+  }
+
+  draw(ctx) {
+    this.game.currentLevel.platforms.forEach(p => p.draw(ctx));
+    this.game.currentLevel.gems.forEach(g => g.draw(ctx));
+    this.game.currentLevel.bugs.forEach(b => b.draw(ctx));
+    this.game.currentLevel.chest.draw(ctx);
+    this.game.player.draw(ctx);
+  }
+}
+
+class TypingState extends GameState {
+  constructor(game) {
+    super(game);
+    this.targetWord = game.currentLevel.word;
+    this.typedLetters = '';
+  }
+
+  enter() {
+    document.getElementById('wordPrompt').style.display = 'block';
+    document.getElementById('instructions').style.display = 'none';
+    this.updateDisplay();
+
+    this.keyHandler = (e) => {
+      if (e.key.length === 1 && e.key.match(/[a-z]/i)) {
+        const expectedChar = this.targetWord[this.typedLetters.length];
+        if (e.key.toLowerCase() === expectedChar.toLowerCase()) {
+          this.typedLetters += e.key.toLowerCase();
+          this.updateDisplay();
+          this.game.score += 20;
+
+          if (this.typedLetters === this.targetWord) {
+            setTimeout(() => this.game.completeLevel(), 800);
+          }
+        } else {
+          // Wrong letter - gentle feedback
+          document.getElementById('wordPrompt').style.background =
+            'linear-gradient(135deg, #FFB6C1 0%, #FFA07A 100%)';
+          setTimeout(() => {
+            document.getElementById('wordPrompt').style.background =
+              'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)';
+          }, 300);
+        }
+      }
+    };
+
+    document.addEventListener('keydown', this.keyHandler);
+  }
+
+  exit() {
+    document.getElementById('wordPrompt').style.display = 'none';
+    document.removeEventListener('keydown', this.keyHandler);
+  }
+
+  updateDisplay() {
+    const display = this.targetWord.split('').map((letter, i) => {
+      if (i < this.typedLetters.length) {
+        return `<span class="correct">${letter}</span>`;
+      }
+      return '_';
+    }).join(' ');
+
+    document.getElementById('wordDisplay').innerHTML = display;
+  }
+
+  draw(ctx) {
+    // Keep showing the game in background
+    this.game.currentLevel.platforms.forEach(p => p.draw(ctx));
+    this.game.currentLevel.chest.draw(ctx);
+    this.game.player.draw(ctx);
+  }
+}
+
+// ============================================================================
+// MAIN GAME CLASS
+// ============================================================================
+class Game {
+  constructor() {
+    this.canvas = document.getElementById('gameCanvas');
+    this.ctx = this.canvas.getContext('2d');
+    this.keys = {};
+    this.state = null;
+    this.particles = new ParticleSystem();
+
+    // Game data
+    this.score = 0;
+    this.lives = 5; // Start with 5 lives
+    this.currentLevelIndex = 0;
+
+    this.setupControls();
+    this.loadLevel(0);
+    this.changeState(new PlayingState(this));
+    this.gameLoop();
+  }
+
+  setupControls() {
+    document.addEventListener('keydown', (e) => {
+      this.keys[e.key] = true;
+    });
+
+    document.addEventListener('keyup', (e) => {
+      this.keys[e.key] = false;
+    });
+
+    document.getElementById('messageButton').addEventListener('click', () => {
+      const action = document.getElementById('messageButton').dataset.action;
+      if (action === 'retry') {
+        this.retryLevel();
+      } else if (action === 'continue') {
+        this.changeState(new PlayingState(this));
+      } else if (action === 'playagain') {
+        this.reset();
+      }
+    });
+  }
+
+  loadLevel(index) {
+    this.currentLevelIndex = index;
+    this.currentLevel = new Level(LEVELS[index]);
+    this.player = new Player(50, 600);
+    this.updateHUD();
+  }
+
+  changeState(newState) {
+    if (this.state) {
+      this.state.exit();
+    }
+    this.state = newState;
+    this.state.enter();
+  }
+
+  collectGem(gem) {
+    this.score += 50;
+    this.particles.emit(gem.pos.x, gem.pos.y, CONFIG.colors.gem.primary, 20);
+    this.showEncouragement();
+    this.updateHUD();
+  }
+
+  showEncouragement() {
+    const msg = ENCOURAGEMENT[Math.floor(Math.random() * ENCOURAGEMENT.length)];
+    const elem = document.getElementById('encouragement');
+    elem.textContent = msg;
+    elem.style.display = 'block';
+    setTimeout(() => {
+      elem.style.display = 'none';
+    }, 1500);
+  }
+
+  loseLife() {
+    this.lives--;
+    this.particles.emit(this.player.pos.x, this.player.pos.y, CONFIG.colors.bug.primary, 25);
+
+    if (this.lives <= 0) {
+      // Don't game over - just retry the level!
+      this.lives = 5;
+      this.showMessage(
+        '😊 Let\'s try again!',
+        'You can do it!',
+        'Try Again',
+        'retry'
+      );
+    } else {
+      // Reset player position with invincibility
+      this.player.pos.x = 50;
+      this.player.pos.y = 600;
+      this.player.vel.x = 0;
+      this.player.vel.y = 0;
+      this.player.invincible = true;
+      this.player.invincibleTime = 180; // 3 seconds of safety
+    }
+
+    this.updateHUD();
+  }
+
+  retryLevel() {
+    // Reload current level - no penalty!
+    this.loadLevel(this.currentLevelIndex);
+    this.changeState(new PlayingState(this));
+  }
+
+  completeLevel() {
+    this.score += 500;
+    this.showEncouragement();
+
+    if (this.currentLevelIndex < LEVELS.length - 1) {
+      // Next level
+      this.showMessage(
+        '🎉 Amazing!',
+        'You did it! Ready for the next level?',
+        'Next Level',
+        'continue'
+      );
+      this.currentLevelIndex++;
+      this.loadLevel(this.currentLevelIndex);
+    } else {
+      // Game completed!
+      this.showMessage(
+        '🏆 YOU WON!',
+        `You completed all levels!<br>Your score: ${this.score}<br><br>You're a superstar! 🌟`,
+        'Play Again',
+        'playagain'
+      );
+    }
+  }
+
+  showMessage(title, text, buttonText, action) {
+    document.getElementById('messageTitle').innerText = title;
+    document.getElementById('messageText').innerHTML = text;
+    document.getElementById('messageButton').innerText = buttonText;
+    document.getElementById('messageButton').dataset.action = action;
+    document.getElementById('message').style.display = 'block';
+    document.getElementById('instructions').style.display = 'none';
+  }
+
+  reset() {
+    this.score = 0;
+    this.lives = 5;
+    this.loadLevel(0);
+    this.changeState(new PlayingState(this));
+  }
+
+  updateHUD() {
+    document.getElementById('score').innerText = this.score;
+    document.getElementById('gems').innerText =
+      this.currentLevel.gems.filter(g => g.collected).length;
+    document.getElementById('totalGems').innerText = this.currentLevel.gems.length;
+    document.getElementById('level').innerText = this.currentLevelIndex + 1;
+    document.getElementById('lives').innerText = this.lives;
+  }
+
+  gameLoop() {
+    // Clear canvas
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+    // Update
+    if (this.state) {
+      this.state.update(this.keys);
+    }
+    this.particles.update();
+
+    // Draw
+    if (this.state) {
+      this.state.draw(this.ctx);
+    }
+    this.particles.draw(this.ctx);
+
+    requestAnimationFrame(() => this.gameLoop());
+  }
+}
+
+// ============================================================================
+// START GAME
+// ============================================================================
+window.addEventListener('load', () => {
+  new Game();
+});
+</script>
+</body>
+</html>
