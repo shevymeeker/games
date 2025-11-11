@@ -1,228 +1,1063 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>WorkQuest Jr.</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WorkQuest Jr. - Advanced Edition</title>
 <style>
-  html, body {
+  * {
     margin: 0;
     padding: 0;
-    overflow: hidden;
-    background: #e0f7fa;
-    font-family: sans-serif;
+    box-sizing: border-box;
   }
+
+  body {
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  #gameContainer {
+    position: relative;
+    box-shadow: 0 10px 50px rgba(0,0,0,0.3);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
   canvas {
     display: block;
-    background: #a7ffeb;
+    background: linear-gradient(180deg, #87CEEB 0%, #E0F6FF 100%);
   }
+
+  #ui {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    pointer-events: none;
+  }
+
+  #hud {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.5) 0%, transparent 100%);
+    color: white;
+    font-weight: bold;
+    font-size: 18px;
+  }
+
+  .stat {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+  }
+
   #wordPrompt {
     position: absolute;
-    top: 20px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+    padding: 30px 50px;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    display: none;
+    text-align: center;
+    border: 3px solid #ff9800;
+  }
+
+  #wordPrompt h2 {
+    color: #e65100;
+    margin-bottom: 15px;
+    font-size: 24px;
+  }
+
+  #wordDisplay {
+    font-size: 48px;
+    font-weight: bold;
+    color: #333;
+    letter-spacing: 10px;
+    margin: 20px 0;
+    font-family: 'Courier New', monospace;
+  }
+
+  .correct {
+    color: #4caf50;
+  }
+
+  #message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255,255,255,0.95);
+    padding: 40px 60px;
+    border-radius: 20px;
+    text-align: center;
+    display: none;
+    box-shadow: 0 10px 50px rgba(0,0,0,0.4);
+    pointer-events: all;
+  }
+
+  #message h1 {
+    color: #667eea;
+    margin-bottom: 20px;
+    font-size: 36px;
+  }
+
+  #message p {
+    color: #666;
+    margin: 10px 0;
+    font-size: 18px;
+  }
+
+  #message button {
+    margin-top: 20px;
+    padding: 12px 30px;
+    font-size: 18px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: transform 0.2s;
+  }
+
+  #message button:hover {
+    transform: scale(1.05);
+  }
+
+  #instructions {
+    position: absolute;
+    bottom: 15px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 32px;
-    font-weight: bold;
-    background: #fff3e0;
+    background: rgba(0,0,0,0.6);
+    color: white;
     padding: 10px 20px;
-    border-radius: 8px;
-    display: none;
+    border-radius: 20px;
+    font-size: 14px;
+    text-align: center;
+  }
+
+  .pulse {
+    animation: pulse 1s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-50%, -50%) scale(1.05); }
   }
 </style>
 </head>
 <body>
-<canvas id="gameCanvas" width="800" height="600"></canvas>
-<div id="wordPrompt"></div>
+<div id="gameContainer">
+  <canvas id="gameCanvas" width="800" height="600"></canvas>
+  <div id="ui">
+    <div id="hud">
+      <div class="stat">
+        <span>⭐ Score: <span id="score">0</span></span>
+      </div>
+      <div class="stat">
+        <span>💎 Gems: <span id="gems">0</span>/<span id="totalGems">0</span></span>
+      </div>
+      <div class="stat">
+        <span>🏆 Level: <span id="level">1</span></span>
+      </div>
+      <div class="stat">
+        <span>❤️ Lives: <span id="lives">3</span></span>
+      </div>
+    </div>
+    <div id="wordPrompt">
+      <h2>Type the word!</h2>
+      <div id="wordDisplay"></div>
+    </div>
+    <div id="message">
+      <h1 id="messageTitle">Game Over</h1>
+      <p id="messageText"></p>
+      <button id="messageButton">Continue</button>
+    </div>
+    <div id="instructions">
+      ⬅️ ➡️ Move | ⬆️ Jump | Collect all gems 💎 | Reach the folder 📁
+    </div>
+  </div>
+</div>
 
 <script>
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-
-let keys = {};
-let player = {
-  x: 50, y: 500, width: 40, height: 40,
-  dx: 0, dy: 0, speed: 3, jumping: false
+// ============================================================================
+// GAME CONFIGURATION
+// ============================================================================
+const CONFIG = {
+  canvas: { width: 800, height: 600 },
+  physics: { gravity: 0.6, friction: 0.85, jumpPower: 12 },
+  player: { width: 35, height: 35, speed: 4, maxSpeed: 8 },
+  colors: {
+    player: ['#00796b', '#004d40'],
+    platform: ['#4db6ac', '#26a69a'],
+    gem: ['#ffd700', '#ffab00'],
+    bug: ['#e53935', '#c62828'],
+    folder: ['#fff176', '#fdd835'],
+    powerup: ['#9c27b0', '#7b1fa2']
+  }
 };
 
-let gravity = 0.5;
-let friction = 0.8;
+// ============================================================================
+// UTILITY CLASSES
+// ============================================================================
+class Vector2D {
+  constructor(x = 0, y = 0) {
+    this.x = x;
+    this.y = y;
+  }
 
-let platforms = [
-  {x: 0, y: 580, width: 800, height: 20},
-  {x: 150, y: 450, width: 100, height: 20},
-  {x: 300, y: 350, width: 100, height: 20},
-  {x: 450, y: 250, width: 100, height: 20},
-];
+  add(v) {
+    this.x += v.x;
+    this.y += v.y;
+    return this;
+  }
 
-let gems = [
-  {x: 160, y: 410, collected: false},
-  {x: 310, y: 310, collected: false},
-  {x: 460, y: 210, collected: false}
-];
+  multiply(scalar) {
+    this.x *= scalar;
+    this.y *= scalar;
+    return this;
+  }
 
-let bugs = [
-  {x: 600, y: 540, width: 40, height: 40, dx: 2}
-];
+  clone() {
+    return new Vector2D(this.x, this.y);
+  }
+}
 
-let folderOpened = false;
-let showWord = false;
-let targetWord = "cat";
-let typedLetters = "";
-let promptDiv = document.getElementById("wordPrompt");
+class Rectangle {
+  constructor(x, y, width, height) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+  }
 
-document.addEventListener("keydown", (e) => {
-  keys[e.key] = true;
+  intersects(other) {
+    return (
+      this.x < other.x + other.width &&
+      this.x + this.width > other.x &&
+      this.y < other.y + other.height &&
+      this.y + this.height > other.y
+    );
+  }
 
-  if (showWord && e.key.length === 1) {
-    if (e.key === targetWord[typedLetters.length]) {
-      typedLetters += e.key;
-      updateWordPrompt();
-      if (typedLetters === targetWord) {
-        promptDiv.innerText = "Great job!";
-      }
+  contains(x, y) {
+    return x >= this.x && x <= this.x + this.width &&
+           y >= this.y && y <= this.y + this.height;
+  }
+}
+
+// ============================================================================
+// PARTICLE SYSTEM
+// ============================================================================
+class Particle {
+  constructor(x, y, color, velocity) {
+    this.pos = new Vector2D(x, y);
+    this.vel = velocity || new Vector2D(Math.random() * 4 - 2, Math.random() * 4 - 6);
+    this.color = color;
+    this.life = 1.0;
+    this.decay = Math.random() * 0.02 + 0.01;
+    this.size = Math.random() * 4 + 2;
+  }
+
+  update() {
+    this.vel.y += CONFIG.physics.gravity * 0.3;
+    this.pos.add(this.vel);
+    this.life -= this.decay;
+    return this.life > 0;
+  }
+
+  draw(ctx) {
+    ctx.save();
+    ctx.globalAlpha = this.life;
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.arc(this.pos.x, this.pos.y, this.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+class ParticleSystem {
+  constructor() {
+    this.particles = [];
+  }
+
+  emit(x, y, color, count = 10) {
+    for (let i = 0; i < count; i++) {
+      this.particles.push(new Particle(x, y, color));
+    }
+  }
+
+  update() {
+    this.particles = this.particles.filter(p => p.update());
+  }
+
+  draw(ctx) {
+    this.particles.forEach(p => p.draw(ctx));
+  }
+}
+
+// ============================================================================
+// GAME ENTITIES
+// ============================================================================
+class Entity {
+  constructor(x, y, width, height) {
+    this.pos = new Vector2D(x, y);
+    this.width = width;
+    this.height = height;
+    this.vel = new Vector2D(0, 0);
+  }
+
+  getBounds() {
+    return new Rectangle(this.pos.x, this.pos.y, this.width, this.height);
+  }
+
+  drawGradient(ctx, colors) {
+    const gradient = ctx.createLinearGradient(
+      this.pos.x, this.pos.y,
+      this.pos.x, this.pos.y + this.height
+    );
+    gradient.addColorStop(0, colors[0]);
+    gradient.addColorStop(1, colors[1]);
+    ctx.fillStyle = gradient;
+    ctx.fillRect(this.pos.x, this.pos.y, this.width, this.height);
+  }
+}
+
+class Player extends Entity {
+  constructor(x, y) {
+    super(x, y, CONFIG.player.width, CONFIG.player.height);
+    this.grounded = false;
+    this.jumpCount = 0;
+    this.maxJumps = 2; // Double jump ability
+    this.invincible = false;
+    this.invincibleTime = 0;
+    this.speedBoost = 1;
+  }
+
+  update(keys, platforms) {
+    // Horizontal movement
+    if (keys['ArrowLeft']) {
+      this.vel.x = Math.max(-CONFIG.player.speed * this.speedBoost, this.vel.x - 1);
+    } else if (keys['ArrowRight']) {
+      this.vel.x = Math.min(CONFIG.player.speed * this.speedBoost, this.vel.x + 1);
     } else {
-      // optional error sound or flash
+      this.vel.x *= CONFIG.physics.friction;
+    }
+
+    // Jumping
+    if (keys['ArrowUp'] && this.jumpCount < this.maxJumps) {
+      this.vel.y = -CONFIG.physics.jumpPower;
+      this.jumpCount++;
+      keys['ArrowUp'] = false; // Prevent continuous jumping
+    }
+
+    // Apply gravity
+    this.vel.y += CONFIG.physics.gravity;
+
+    // Update position
+    this.pos.add(this.vel);
+
+    // Ground collision
+    this.grounded = false;
+    platforms.forEach(platform => {
+      if (this.vel.y > 0 && this.collidesWith(platform)) {
+        this.pos.y = platform.pos.y - this.height;
+        this.vel.y = 0;
+        this.grounded = true;
+        this.jumpCount = 0;
+      }
+    });
+
+    // Screen bounds
+    this.pos.x = Math.max(0, Math.min(CONFIG.canvas.width - this.width, this.pos.x));
+
+    // Fall death
+    if (this.pos.y > CONFIG.canvas.height) {
+      return 'fell';
+    }
+
+    // Update invincibility
+    if (this.invincible) {
+      this.invincibleTime--;
+      if (this.invincibleTime <= 0) {
+        this.invincible = false;
+      }
+    }
+
+    return null;
+  }
+
+  collidesWith(other) {
+    return this.getBounds().intersects(other.getBounds());
+  }
+
+  draw(ctx) {
+    ctx.save();
+
+    // Invincibility flash effect
+    if (this.invincible && Math.floor(this.invincibleTime / 5) % 2 === 0) {
+      ctx.globalAlpha = 0.5;
+    }
+
+    // Draw player with gradient
+    this.drawGradient(ctx, CONFIG.colors.player);
+
+    // Draw eyes
+    ctx.fillStyle = 'white';
+    ctx.fillRect(this.pos.x + 8, this.pos.y + 10, 6, 6);
+    ctx.fillRect(this.pos.x + 21, this.pos.y + 10, 6, 6);
+    ctx.fillStyle = 'black';
+    ctx.fillRect(this.pos.x + 10, this.pos.y + 12, 3, 3);
+    ctx.fillRect(this.pos.x + 23, this.pos.y + 12, 3, 3);
+
+    ctx.restore();
+  }
+}
+
+class Platform extends Entity {
+  constructor(x, y, width, height) {
+    super(x, y, width, height);
+  }
+
+  draw(ctx) {
+    this.drawGradient(ctx, CONFIG.colors.platform);
+    // Add platform border
+    ctx.strokeStyle = '#00897b';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(this.pos.x, this.pos.y, this.width, this.height);
+  }
+}
+
+class Gem extends Entity {
+  constructor(x, y) {
+    super(x, y, 20, 20);
+    this.collected = false;
+    this.rotation = 0;
+    this.floatOffset = 0;
+  }
+
+  update() {
+    this.rotation += 0.05;
+    this.floatOffset = Math.sin(Date.now() / 200) * 5;
+  }
+
+  draw(ctx) {
+    if (this.collected) return;
+
+    ctx.save();
+    ctx.translate(this.pos.x + this.width / 2, this.pos.y + this.height / 2 + this.floatOffset);
+    ctx.rotate(this.rotation);
+
+    // Draw gem as diamond
+    const size = 12;
+    ctx.beginPath();
+    ctx.moveTo(0, -size);
+    ctx.lineTo(size, 0);
+    ctx.lineTo(0, size);
+    ctx.lineTo(-size, 0);
+    ctx.closePath();
+
+    const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, size);
+    gradient.addColorStop(0, CONFIG.colors.gem[0]);
+    gradient.addColorStop(1, CONFIG.colors.gem[1]);
+    ctx.fillStyle = gradient;
+    ctx.fill();
+
+    ctx.strokeStyle = '#ff8f00';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.restore();
+  }
+}
+
+class Bug extends Entity {
+  constructor(x, y, patrolStart, patrolEnd) {
+    super(x, y, 35, 35);
+    this.patrolStart = patrolStart;
+    this.patrolEnd = patrolEnd;
+    this.speed = 1.5 + Math.random();
+    this.direction = 1;
+  }
+
+  update() {
+    this.pos.x += this.speed * this.direction;
+
+    if (this.pos.x <= this.patrolStart || this.pos.x >= this.patrolEnd) {
+      this.direction *= -1;
     }
   }
+
+  draw(ctx) {
+    ctx.save();
+
+    // Body
+    this.drawGradient(ctx, CONFIG.colors.bug);
+
+    // Eyes (angry look)
+    ctx.fillStyle = 'white';
+    ctx.fillRect(this.pos.x + 5, this.pos.y + 8, 8, 8);
+    ctx.fillRect(this.pos.x + 22, this.pos.y + 8, 8, 8);
+    ctx.fillStyle = 'red';
+    ctx.fillRect(this.pos.x + 7, this.pos.y + 10, 4, 4);
+    ctx.fillRect(this.pos.x + 24, this.pos.y + 10, 4, 4);
+
+    // Antennae
+    ctx.strokeStyle = '#c62828';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(this.pos.x + 10, this.pos.y);
+    ctx.lineTo(this.pos.x + 7, this.pos.y - 8);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(this.pos.x + 25, this.pos.y);
+    ctx.lineTo(this.pos.x + 28, this.pos.y - 8);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+}
+
+class Folder extends Entity {
+  constructor(x, y) {
+    super(x, y, 50, 50);
+    this.open = false;
+    this.pulsePhase = 0;
+  }
+
+  update() {
+    this.pulsePhase += 0.1;
+  }
+
+  draw(ctx) {
+    if (!this.open) return;
+
+    ctx.save();
+
+    const pulse = Math.sin(this.pulsePhase) * 3;
+    const size = 50 + pulse;
+    const offset = -pulse / 2;
+
+    // Folder body
+    const gradient = ctx.createLinearGradient(
+      this.pos.x, this.pos.y,
+      this.pos.x, this.pos.y + size
+    );
+    gradient.addColorStop(0, CONFIG.colors.folder[0]);
+    gradient.addColorStop(1, CONFIG.colors.folder[1]);
+    ctx.fillStyle = gradient;
+    ctx.fillRect(this.pos.x + offset, this.pos.y + offset, size, size);
+
+    // Folder tab
+    ctx.fillStyle = '#ffee58';
+    ctx.fillRect(this.pos.x + offset, this.pos.y + offset, size * 0.6, size * 0.2);
+
+    // Glow effect
+    ctx.shadowBlur = 20;
+    ctx.shadowColor = '#fff176';
+    ctx.strokeStyle = '#f9a825';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(this.pos.x + offset, this.pos.y + offset, size, size);
+
+    ctx.restore();
+  }
+}
+
+class PowerUp extends Entity {
+  constructor(x, y, type) {
+    super(x, y, 25, 25);
+    this.type = type; // 'speed', 'invincible', 'jump'
+    this.collected = false;
+    this.rotation = 0;
+  }
+
+  update() {
+    this.rotation += 0.08;
+  }
+
+  draw(ctx) {
+    if (this.collected) return;
+
+    ctx.save();
+    ctx.translate(this.pos.x + this.width / 2, this.pos.y + this.height / 2);
+    ctx.rotate(this.rotation);
+
+    // Draw power-up
+    const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, 15);
+    gradient.addColorStop(0, CONFIG.colors.powerup[0]);
+    gradient.addColorStop(1, CONFIG.colors.powerup[1]);
+    ctx.fillStyle = gradient;
+
+    ctx.beginPath();
+    for (let i = 0; i < 5; i++) {
+      const angle = (i * 4 * Math.PI) / 5;
+      const r = i % 2 === 0 ? 15 : 8;
+      ctx.lineTo(Math.cos(angle) * r, Math.sin(angle) * r);
+    }
+    ctx.closePath();
+    ctx.fill();
+
+    // Icon
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 16px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const icon = this.type === 'speed' ? '⚡' : this.type === 'invincible' ? '🛡️' : '⬆️';
+    ctx.fillText(icon, 0, 0);
+
+    ctx.restore();
+  }
+}
+
+// ============================================================================
+// LEVEL SYSTEM
+// ============================================================================
+class Level {
+  constructor(config) {
+    this.platforms = config.platforms.map(p => new Platform(p.x, p.y, p.width, p.height));
+    this.gems = config.gems.map(g => new Gem(g.x, g.y));
+    this.bugs = config.bugs.map(b => new Bug(b.x, b.y, b.patrolStart, b.patrolEnd));
+    this.powerups = (config.powerups || []).map(p => new PowerUp(p.x, p.y, p.type));
+    this.folder = new Folder(config.folder.x, config.folder.y);
+    this.word = config.word;
+    this.background = config.background || '#87CEEB';
+  }
+}
+
+const LEVELS = [
+  {
+    platforms: [
+      {x: 0, y: 580, width: 800, height: 20},
+      {x: 150, y: 480, width: 120, height: 15},
+      {x: 320, y: 400, width: 120, height: 15},
+      {x: 500, y: 320, width: 120, height: 15}
+    ],
+    gems: [
+      {x: 190, y: 440},
+      {x: 360, y: 360},
+      {x: 540, y: 280}
+    ],
+    bugs: [
+      {x: 400, y: 545, patrolStart: 300, patrolEnd: 500}
+    ],
+    powerups: [
+      {x: 100, y: 540, type: 'speed'}
+    ],
+    folder: {x: 720, y: 520},
+    word: 'code'
+  },
+  {
+    platforms: [
+      {x: 0, y: 580, width: 800, height: 20},
+      {x: 100, y: 500, width: 100, height: 15},
+      {x: 250, y: 420, width: 100, height: 15},
+      {x: 400, y: 340, width: 100, height: 15},
+      {x: 550, y: 420, width: 100, height: 15},
+      {x: 650, y: 500, width: 100, height: 15}
+    ],
+    gems: [
+      {x: 140, y: 460},
+      {x: 290, y: 380},
+      {x: 440, y: 300},
+      {x: 590, y: 380}
+    ],
+    bugs: [
+      {x: 250, y: 545, patrolStart: 200, patrolEnd: 400},
+      {x: 500, y: 545, patrolStart: 450, patrolEnd: 650}
+    ],
+    powerups: [
+      {x: 680, y: 460, type: 'invincible'}
+    ],
+    folder: {x: 690, y: 450},
+    word: 'debug'
+  },
+  {
+    platforms: [
+      {x: 0, y: 580, width: 800, height: 20},
+      {x: 50, y: 500, width: 80, height: 15},
+      {x: 180, y: 450, width: 80, height: 15},
+      {x: 310, y: 380, width: 80, height: 15},
+      {x: 440, y: 310, width: 80, height: 15},
+      {x: 570, y: 380, width: 80, height: 15},
+      {x: 670, y: 450, width: 80, height: 15}
+    ],
+    gems: [
+      {x: 75, y: 460},
+      {x: 220, y: 410},
+      {x: 350, y: 340},
+      {x: 480, y: 270},
+      {x: 610, y: 340}
+    ],
+    bugs: [
+      {x: 150, y: 545, patrolStart: 100, patrolEnd: 300},
+      {x: 400, y: 545, patrolStart: 350, patrolEnd: 550},
+      {x: 650, y: 545, patrolStart: 600, patrolEnd: 750}
+    ],
+    powerups: [
+      {x: 345, y: 340, type: 'jump'}
+    ],
+    folder: {x: 700, y: 410},
+    word: 'array'
+  }
+];
+
+// ============================================================================
+// GAME STATE MACHINE
+// ============================================================================
+class GameState {
+  constructor(game) {
+    this.game = game;
+  }
+
+  enter() {}
+  exit() {}
+  update(keys) {}
+  draw(ctx) {}
+}
+
+class PlayingState extends GameState {
+  enter() {
+    document.getElementById('message').style.display = 'none';
+    document.getElementById('instructions').style.display = 'block';
+  }
+
+  update(keys) {
+    const result = this.game.player.update(keys, this.game.currentLevel.platforms);
+
+    if (result === 'fell') {
+      this.game.loseLife();
+      return;
+    }
+
+    // Update entities
+    this.game.currentLevel.gems.forEach(gem => gem.update());
+    this.game.currentLevel.bugs.forEach(bug => bug.update());
+    this.game.currentLevel.powerups.forEach(powerup => powerup.update());
+    this.game.currentLevel.folder.update();
+
+    // Gem collection
+    this.game.currentLevel.gems.forEach(gem => {
+      if (!gem.collected && this.game.player.collidesWith(gem)) {
+        gem.collected = true;
+        this.game.collectGem(gem);
+      }
+    });
+
+    // Power-up collection
+    this.game.currentLevel.powerups.forEach(powerup => {
+      if (!powerup.collected && this.game.player.collidesWith(powerup)) {
+        powerup.collected = true;
+        this.game.collectPowerUp(powerup);
+      }
+    });
+
+    // Bug collision
+    if (!this.game.player.invincible) {
+      this.game.currentLevel.bugs.forEach(bug => {
+        if (this.game.player.collidesWith(bug)) {
+          this.game.loseLife();
+        }
+      });
+    }
+
+    // Check if all gems collected
+    const allGemsCollected = this.game.currentLevel.gems.every(g => g.collected);
+    if (allGemsCollected && !this.game.currentLevel.folder.open) {
+      this.game.currentLevel.folder.open = true;
+      this.game.score += 100;
+    }
+
+    // Check folder collision
+    if (this.game.currentLevel.folder.open &&
+        this.game.player.collidesWith(this.game.currentLevel.folder)) {
+      this.game.changeState(new TypingState(this.game));
+    }
+  }
+
+  draw(ctx) {
+    this.game.currentLevel.platforms.forEach(p => p.draw(ctx));
+    this.game.currentLevel.gems.forEach(g => g.draw(ctx));
+    this.game.currentLevel.powerups.forEach(p => p.draw(ctx));
+    this.game.currentLevel.bugs.forEach(b => b.draw(ctx));
+    this.game.currentLevel.folder.draw(ctx);
+    this.game.player.draw(ctx);
+  }
+}
+
+class TypingState extends GameState {
+  constructor(game) {
+    super(game);
+    this.targetWord = game.currentLevel.word;
+    this.typedLetters = '';
+  }
+
+  enter() {
+    document.getElementById('wordPrompt').style.display = 'block';
+    document.getElementById('instructions').style.display = 'none';
+    this.updateDisplay();
+
+    this.keyHandler = (e) => {
+      if (e.key.length === 1 && e.key.match(/[a-z]/i)) {
+        const expectedChar = this.targetWord[this.typedLetters.length];
+        if (e.key.toLowerCase() === expectedChar.toLowerCase()) {
+          this.typedLetters += e.key.toLowerCase();
+          this.updateDisplay();
+          this.game.score += 10;
+
+          if (this.typedLetters === this.targetWord) {
+            setTimeout(() => this.game.completeLevel(), 500);
+          }
+        } else {
+          // Wrong letter - flash effect
+          document.getElementById('wordPrompt').style.background =
+            'linear-gradient(135deg, #ffcdd2 0%, #ef9a9a 100%)';
+          setTimeout(() => {
+            document.getElementById('wordPrompt').style.background =
+              'linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%)';
+          }, 200);
+        }
+      }
+    };
+
+    document.addEventListener('keydown', this.keyHandler);
+  }
+
+  exit() {
+    document.getElementById('wordPrompt').style.display = 'none';
+    document.removeEventListener('keydown', this.keyHandler);
+  }
+
+  updateDisplay() {
+    const display = this.targetWord.split('').map((letter, i) => {
+      if (i < this.typedLetters.length) {
+        return `<span class="correct">${letter}</span>`;
+      }
+      return '_';
+    }).join(' ');
+
+    document.getElementById('wordDisplay').innerHTML = display;
+  }
+
+  draw(ctx) {
+    // Keep showing the game in background
+    this.game.currentLevel.platforms.forEach(p => p.draw(ctx));
+    this.game.currentLevel.folder.draw(ctx);
+    this.game.player.draw(ctx);
+  }
+}
+
+// ============================================================================
+// MAIN GAME CLASS
+// ============================================================================
+class Game {
+  constructor() {
+    this.canvas = document.getElementById('gameCanvas');
+    this.ctx = this.canvas.getContext('2d');
+    this.keys = {};
+    this.state = null;
+    this.particles = new ParticleSystem();
+
+    // Game data
+    this.score = 0;
+    this.lives = 3;
+    this.currentLevelIndex = 0;
+    this.highScore = parseInt(localStorage.getItem('workquest_highscore')) || 0;
+
+    this.setupControls();
+    this.loadLevel(0);
+    this.changeState(new PlayingState(this));
+    this.gameLoop();
+  }
+
+  setupControls() {
+    document.addEventListener('keydown', (e) => {
+      this.keys[e.key] = true;
+    });
+
+    document.addEventListener('keyup', (e) => {
+      this.keys[e.key] = false;
+    });
+
+    document.getElementById('messageButton').addEventListener('click', () => {
+      const action = document.getElementById('messageButton').dataset.action;
+      if (action === 'restart') {
+        this.reset();
+      } else if (action === 'continue') {
+        this.changeState(new PlayingState(this));
+      }
+    });
+  }
+
+  loadLevel(index) {
+    this.currentLevelIndex = index;
+    this.currentLevel = new Level(LEVELS[index]);
+    this.player = new Player(50, 500);
+    this.updateHUD();
+  }
+
+  changeState(newState) {
+    if (this.state) {
+      this.state.exit();
+    }
+    this.state = newState;
+    this.state.enter();
+  }
+
+  collectGem(gem) {
+    this.score += 50;
+    this.particles.emit(gem.pos.x, gem.pos.y, CONFIG.colors.gem[0], 15);
+    this.updateHUD();
+  }
+
+  collectPowerUp(powerup) {
+    this.score += 100;
+    this.particles.emit(powerup.pos.x, powerup.pos.y, CONFIG.colors.powerup[0], 20);
+
+    switch(powerup.type) {
+      case 'speed':
+        this.player.speedBoost = 1.5;
+        setTimeout(() => this.player.speedBoost = 1, 5000);
+        break;
+      case 'invincible':
+        this.player.invincible = true;
+        this.player.invincibleTime = 180; // 3 seconds at 60fps
+        break;
+      case 'jump':
+        this.player.maxJumps = 3;
+        setTimeout(() => this.player.maxJumps = 2, 5000);
+        break;
+    }
+  }
+
+  loseLife() {
+    this.lives--;
+    this.particles.emit(this.player.pos.x, this.player.pos.y, CONFIG.colors.bug[0], 30);
+
+    if (this.lives <= 0) {
+      this.gameOver();
+    } else {
+      // Reset player position
+      this.player.pos.x = 50;
+      this.player.pos.y = 500;
+      this.player.vel.x = 0;
+      this.player.vel.y = 0;
+      this.player.invincible = true;
+      this.player.invincibleTime = 120; // 2 seconds of invincibility
+    }
+
+    this.updateHUD();
+  }
+
+  completeLevel() {
+    this.score += 500;
+
+    if (this.currentLevelIndex < LEVELS.length - 1) {
+      // Next level
+      this.showMessage(
+        '🎉 Level Complete!',
+        `Great job! Score: ${this.score}`,
+        'Next Level',
+        'continue'
+      );
+      this.currentLevelIndex++;
+      this.loadLevel(this.currentLevelIndex);
+    } else {
+      // Game completed!
+      this.gameWon();
+    }
+  }
+
+  gameWon() {
+    if (this.score > this.highScore) {
+      this.highScore = this.score;
+      localStorage.setItem('workquest_highscore', this.highScore);
+    }
+
+    this.showMessage(
+      '🏆 You Won!',
+      `Congratulations! You completed all levels!<br>Final Score: ${this.score}<br>High Score: ${this.highScore}`,
+      'Play Again',
+      'restart'
+    );
+  }
+
+  gameOver() {
+    if (this.score > this.highScore) {
+      this.highScore = this.score;
+      localStorage.setItem('workquest_highscore', this.highScore);
+    }
+
+    this.showMessage(
+      '💀 Game Over',
+      `Better luck next time!<br>Score: ${this.score}<br>High Score: ${this.highScore}`,
+      'Try Again',
+      'restart'
+    );
+  }
+
+  showMessage(title, text, buttonText, action) {
+    document.getElementById('messageTitle').innerText = title;
+    document.getElementById('messageText').innerHTML = text;
+    document.getElementById('messageButton').innerText = buttonText;
+    document.getElementById('messageButton').dataset.action = action;
+    document.getElementById('message').style.display = 'block';
+    document.getElementById('instructions').style.display = 'none';
+  }
+
+  reset() {
+    this.score = 0;
+    this.lives = 3;
+    this.loadLevel(0);
+    this.changeState(new PlayingState(this));
+  }
+
+  updateHUD() {
+    document.getElementById('score').innerText = this.score;
+    document.getElementById('gems').innerText =
+      this.currentLevel.gems.filter(g => g.collected).length;
+    document.getElementById('totalGems').innerText = this.currentLevel.gems.length;
+    document.getElementById('level').innerText = this.currentLevelIndex + 1;
+    document.getElementById('lives').innerText = this.lives;
+  }
+
+  gameLoop() {
+    // Clear canvas
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+    // Update
+    if (this.state) {
+      this.state.update(this.keys);
+    }
+    this.particles.update();
+
+    // Draw
+    if (this.state) {
+      this.state.draw(this.ctx);
+    }
+    this.particles.draw(this.ctx);
+
+    requestAnimationFrame(() => this.gameLoop());
+  }
+}
+
+// ============================================================================
+// START GAME
+// ============================================================================
+window.addEventListener('load', () => {
+  new Game();
 });
-
-document.addEventListener("keyup", (e) => {
-  keys[e.key] = false;
-});
-
-function updateWordPrompt() {
-  promptDiv.innerText = targetWord.split('').map((l, i) => typedLetters[i] || "_").join(" ");
-}
-
-function drawPlayer() {
-  ctx.fillStyle = "#00796b";
-  ctx.fillRect(player.x, player.y, player.width, player.height);
-}
-
-function drawPlatforms() {
-  ctx.fillStyle = "#4db6ac";
-  platforms.forEach(p => {
-    ctx.fillRect(p.x, p.y, p.width, p.height);
-  });
-}
-
-function drawGems() {
-  gems.forEach(gem => {
-    if (!gem.collected) {
-      ctx.beginPath();
-      ctx.arc(gem.x, gem.y, 10, 0, Math.PI * 2);
-      ctx.fillStyle = "#ffab00";
-      ctx.fill();
-    }
-  });
-}
-
-function drawBugs() {
-  ctx.fillStyle = "#d32f2f";
-  bugs.forEach(bug => {
-    ctx.fillRect(bug.x, bug.y, bug.width, bug.height);
-  });
-}
-
-function drawFolder() {
-  if (folderOpened) {
-    ctx.fillStyle = "#fff176";
-    ctx.fillRect(700, 500, 60, 60);
-  }
-}
-
-function checkCollision(a, b) {
-  return (a.x < b.x + b.width &&
-          a.x + a.width > b.x &&
-          a.y < b.y + b.height &&
-          a.y + a.height > b.y);
-}
-
-function update() {
-  // Movement
-  if (keys["ArrowLeft"]) player.dx = -player.speed;
-  else if (keys["ArrowRight"]) player.dx = player.speed;
-  else player.dx *= friction;
-
-  if (keys["ArrowUp"] && !player.jumping) {
-    player.dy = -10;
-    player.jumping = true;
-  }
-
-  player.dy += gravity;
-  player.x += player.dx;
-  player.y += player.dy;
-
-  // Collision with platforms
-  platforms.forEach(p => {
-    if (player.x < p.x + p.width &&
-        player.x + player.width > p.x &&
-        player.y + player.height > p.y &&
-        player.y + player.height < p.y + p.height) {
-      player.y = p.y - player.height;
-      player.dy = 0;
-      player.jumping = false;
-    }
-  });
-
-  // Gem collection
-  gems.forEach(gem => {
-    let dist = Math.hypot(player.x - gem.x, player.y - gem.y);
-    if (dist < 30 && !gem.collected) {
-      gem.collected = true;
-    }
-  });
-
-  // Bug collision
-  bugs.forEach(bug => {
-    bug.x += bug.dx;
-    if (bug.x < 0 || bug.x + bug.width > canvas.width) bug.dx *= -1;
-
-    if (checkCollision(player, bug)) {
-      resetGame();
-    }
-  });
-
-  // Folder open condition
-  if (gems.every(g => g.collected)) {
-    folderOpened = true;
-  }
-
-  // Trigger typing challenge
-  if (folderOpened && !showWord) {
-    let inFolder = player.x > 700 && player.y > 480;
-    if (inFolder) {
-      showWord = true;
-      promptDiv.style.display = "block";
-      updateWordPrompt();
-    }
-  }
-}
-
-function resetGame() {
-  player.x = 50;
-  player.y = 500;
-  player.dx = 0;
-  player.dy = 0;
-  gems.forEach(g => g.collected = false);
-  folderOpened = false;
-  showWord = false;
-  typedLetters = "";
-  promptDiv.style.display = "none";
-}
-
-function gameLoop() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  update();
-  drawPlatforms();
-  drawGems();
-  drawBugs();
-  drawFolder();
-  drawPlayer();
-  requestAnimationFrame(gameLoop);
-}
-
-gameLoop();
 </script>
 </body>
 </html>
